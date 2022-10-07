@@ -44,7 +44,9 @@ speech_config.speech_recognition_language="en-US"
 #speech_config.speech_recognition_language="fa-IR"
 
 # configs tts voice
-speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
+# other than Aria, style compatible (-empathetic) with Davis, Guy, Jane, Jason, Jenny, Nancy, Tony
+
+speech_config.speech_synthesis_voice_name='en-US-DavisNeural'
 #speech_config.speech_synthesis_voice_name='en-US-AIGenerate1Neural'
 #speech_config.speech_synthesis_voice_name = 'zh-CN-XiaomoNeural'
 #speech_config.speech_synthesis_voice_name='es-MX-CarlotaNeural'
@@ -52,6 +54,9 @@ speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
 
 # sets voice
 voice = speech_config.speech_synthesis_voice_name
+
+# sets tts sample rate
+speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Raw48Khz16BitMonoPcm)
 
 # microphone device stt 
 stt_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
@@ -62,13 +67,10 @@ tts_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=True)
 speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=stt_config)
 # inits tts
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=tts_config)
-# sets tts sample rate
-speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Riff44100Hz16BitMonoPcm)
-
 
 # sets up identifiers for conversation
 user = "Seb"
-bot = "Jenny"
+bot = "Davis"
 
 ### SETUP VARIABLES ###
 # concats message history for re-insertion with every prompt
@@ -78,10 +80,10 @@ raspuns = ""
 raspunsF = ""
 # holds emotional response chosen by GPT-3
 style = ""
-# counts number of messages in conversation history 
-messageCount = 0
 # counts number of times user silence for input
 silenceCount = 0
+# counts number of messages in conversation history 
+messageCount = 0
 
 """ TONE_GPT3()
 1. inputs and reads user prompt
@@ -91,14 +93,14 @@ silenceCount = 0
 def tone_gpt3(zice):
     toneLabel = openai.Completion.create(
         engine="text-davinci-002",
-        prompt="Read the following interaction, then pick just one of the most appropriate emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, hopeful, cheerful, excited, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
-        #prompt="Read the following interaction, then pick just one of the most appropriate emotions to respond with to "+user+" as "+bot+" from this list only: [cheerful, empathetic, angry, sad, excited, friendly, terrified, shouting, unfriendly, whispering, hopeful].\n"+raspunsF+"\n"+user+": "+zice+"\n\nEmotion: [",
+        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, angry, angry, shouting, shouting, sad, terrified, whispering, hopeful, cheerful, excited, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
+        #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, shouting, sad, terrified, whispering, hopeful, cheerful, excited, empathetic, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
         temperature=0.0,
         max_tokens=12,
         top_p=1.0,
         frequency_penalty=0.0,
         presence_penalty=0.0,
-        stop=[user+": ", bot+": ", "Emotion: [", ","],
+        stop=[user+":", bot+":", "Emotion: [", ","],
     )
     return toneLabel
 
@@ -111,13 +113,13 @@ def chat_gpt3(zice):
     response = openai.Completion.create(
         engine="text-davinci-002",
         #prompt= bot+" is helping "+user+" speak Spanish. "+context+"\n"+user+": "+zice+"\n"+bot+":",
-        prompt= "This is a conversation between "+bot+" and "+user+" in a Discord voice chat. "+bot+" leads the conversation by asking fun and interesting questions, and switches up the topic when things get boring. "+bot+" is witty, sarcastic, and brutally honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
+        prompt= "This is a conversation between "+bot+" and "+user+". "+bot+" loves to ask random questions and reciprocate. "+bot+" is witty, sarcastic, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
         temperature=1.0,
         max_tokens=256,
         top_p=1.0,
-        frequency_penalty=2.0,
+        frequency_penalty=1.0,
         presence_penalty=0.0,
-        stop=[user+": ", bot+": ", "["],
+        stop=[user+":", bot+":", "["],
         echo=False,
     )
     return response
@@ -222,7 +224,7 @@ while (True):
                 xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
                 <voice name="'''+voice+'''">
                 <prosody rate="medium">
-                <mstts:express-as style="'''+style+'''" styledegree="1">
+                <mstts:express-as style="'''+style+'''" styledegree="2">
                 '''+ raspuns +'''
                 </mstts:express-as>
                 </prosody>
@@ -230,7 +232,7 @@ while (True):
                 </speak>'''
 
                 # synthesizes TTS with input SSML
-                tts(xmlStringReg)
+                tts(xmlString)
 
                 # resets silence count to 0
                 silenceCount = 0
@@ -286,7 +288,7 @@ while (True):
                     </speak>'''
 
                     # synthesizes TTS with input SSML
-                    tts(xmlStringReg)
+                    tts(xmlString)
 
                     # resets silence count to 0
                     silenceCount = 0
