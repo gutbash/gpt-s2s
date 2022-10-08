@@ -48,7 +48,7 @@ speech_config.speech_recognition_language="en-US"
 # configs tts voice
 # other than Aria, style compatible (-empathetic) with Davis, Guy, Jane, Jason, Jenny, Nancy, Tony
 
-speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
+speech_config.speech_synthesis_voice_name='en-US-DavisNeural'
 #speech_config.speech_synthesis_voice_name='en-US-AIGenerate1Neural'
 #speech_config.speech_synthesis_voice_name = 'zh-CN-XiaomoNeural'
 #speech_config.speech_synthesis_voice_name='es-MX-CarlotaNeural'
@@ -72,8 +72,8 @@ speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audi
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=tts_config)
 
 # sets up identifiers for conversation
-user = "Seb"
-bot = "Jenny"
+user = "Sam"
+bot = "Davis"
 
 ### SETUP VARIABLES ###
 # concats message history for re-insertion with every prompt
@@ -114,9 +114,9 @@ def tone_gpt3(zice):
 """
 def chat_gpt3(zice):
     response = openai.Completion.create(
-        engine="text-davinci-001",
+        engine="text-davinci-002",
         #prompt= bot+" is helping "+user+" speak Spanish. "+context+"\n"+user+": "+zice+"\n"+bot+":",
-        prompt= "This is a conversation between "+bot+" and "+user+" in Filipino/Tagalog. "+bot+" loves to ask random questions and reciprocate. "+bot+" is witty, sarcastic, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
+        prompt= "This is a conversation between "+bot+" and "+user+". "+bot+" is knowledgable, witty, sarcastic, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
         temperature=1.0,
         max_tokens=256,
         top_p=1.0,
@@ -133,7 +133,9 @@ def chat_gpt3(zice):
 """
 def tts(ssml):
     global speech_synthesis_result
-    speech_synthesis_result = speech_synthesizer.speak_ssml_async(ssml).get()
+    #speech_recognizer.stop_speaking_async()
+    #speech_synthesis_result = speech_synthesizer.speak_ssml_async(ssml)
+    speech_synthesis_result = speech_synthesizer.start_speaking_ssml_async(ssml)
 
 def stt(model="base", english=False, verbose=False, energy=300, pause=0.5, dynamic=True):
     
@@ -227,7 +229,7 @@ while (True):
                 xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
                 <voice name="'''+voice+'''">
                 <prosody rate="medium">
-                <mstts:express-as style="'''+style+'''" styledegree="2">
+                <mstts:express-as style="'''+style+'''" styledegree="1">
                 '''+ raspuns +'''
                 </mstts:express-as>
                 </prosody>
@@ -283,7 +285,7 @@ while (True):
                     xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
                     <voice name="'''+voice+'''">
                     <prosody rate="medium">
-                    <mstts:express-as style="'''+style+'''" styledegree="2">
+                    <mstts:express-as style="'''+style+'''" styledegree="1">
                     '''+ raspuns +'''
                     </mstts:express-as>
                     </prosody>
@@ -307,7 +309,7 @@ while (True):
         while not done:
             
             print("|||||||||| LISTENING ||||||||||")
-            playsound('start.mp3', False)
+            #playsound('start.mp3', False)
 
             # gets azure stt
             speech_recognition_result = speech_recognizer.recognize_once_async().get()
