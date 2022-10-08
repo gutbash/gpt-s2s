@@ -22,6 +22,7 @@ import whisper
 import speech_recognition as sr
 from pydub import AudioSegment
 import io
+from playsound import playsound
 
 # loads env variables file
 load_dotenv()
@@ -39,6 +40,7 @@ speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region="ea
 
 # configs stt lang
 speech_config.speech_recognition_language="en-US"
+#speech_config.speech_recognition_language="fil-PH"
 #speech_config.speech_recognition_language="fr-CA"
 #speech_config.speech_recognition_language="es-US"
 #speech_config.speech_recognition_language="fa-IR"
@@ -46,11 +48,12 @@ speech_config.speech_recognition_language="en-US"
 # configs tts voice
 # other than Aria, style compatible (-empathetic) with Davis, Guy, Jane, Jason, Jenny, Nancy, Tony
 
-speech_config.speech_synthesis_voice_name='en-US-DavisNeural'
+speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
 #speech_config.speech_synthesis_voice_name='en-US-AIGenerate1Neural'
 #speech_config.speech_synthesis_voice_name = 'zh-CN-XiaomoNeural'
 #speech_config.speech_synthesis_voice_name='es-MX-CarlotaNeural'
-#speech_config.speech_synthesis_voice_name = 'fa-IR-FaridNeural'
+#speech_config.speech_synthesis_voice_name = 'fil-PH-AngeloNeural'
+#speech_config.speech_synthesis_voice_name = 'fil-PH-BlessicaNeural'
 
 # sets voice
 voice = speech_config.speech_synthesis_voice_name
@@ -70,7 +73,7 @@ speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, au
 
 # sets up identifiers for conversation
 user = "Seb"
-bot = "Davis"
+bot = "Jenny"
 
 ### SETUP VARIABLES ###
 # concats message history for re-insertion with every prompt
@@ -93,7 +96,7 @@ messageCount = 0
 def tone_gpt3(zice):
     toneLabel = openai.Completion.create(
         engine="text-davinci-002",
-        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, angry, angry, shouting, shouting, sad, terrified, whispering, hopeful, cheerful, excited, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
+        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, angry, shouting, shouting, sad, terrified, whispering, whispering, whispering, hopeful, cheerful, excited, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
         #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, shouting, sad, terrified, whispering, hopeful, cheerful, excited, empathetic, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
         temperature=0.0,
         max_tokens=12,
@@ -111,13 +114,13 @@ def tone_gpt3(zice):
 """
 def chat_gpt3(zice):
     response = openai.Completion.create(
-        engine="text-davinci-002",
+        engine="text-davinci-001",
         #prompt= bot+" is helping "+user+" speak Spanish. "+context+"\n"+user+": "+zice+"\n"+bot+":",
-        prompt= "This is a conversation between "+bot+" and "+user+". "+bot+" loves to ask random questions and reciprocate. "+bot+" is witty, sarcastic, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
+        prompt= "This is a conversation between "+bot+" and "+user+" in Filipino/Tagalog. "+bot+" loves to ask random questions and reciprocate. "+bot+" is witty, sarcastic, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
         temperature=1.0,
         max_tokens=256,
         top_p=1.0,
-        frequency_penalty=1.0,
+        frequency_penalty=0.0,
         presence_penalty=0.0,
         stop=[user+":", bot+":", "["],
         echo=False,
@@ -132,11 +135,11 @@ def tts(ssml):
     global speech_synthesis_result
     speech_synthesis_result = speech_synthesizer.speak_ssml_async(ssml).get()
 
-temp_dir = tempfile.mkdtemp()
-save_path = os.path.join(temp_dir, "temp.wav")
-
 def stt(model="base", english=False, verbose=False, energy=300, pause=0.5, dynamic=True):
     
+    temp_dir = tempfile.mkdtemp()
+    save_path = os.path.join(temp_dir, "temp.wav")
+
     audio_model = whisper.load_model(model)
     
     r = sr.Recognizer()
@@ -304,9 +307,12 @@ while (True):
         while not done:
             
             print("|||||||||| LISTENING ||||||||||")
+            playsound('start.mp3', False)
 
             # gets azure stt
             speech_recognition_result = speech_recognizer.recognize_once_async().get()
+
+            #playsound('stop.mp3', False)
 
             # gets tts from azure stt
             speech_recognizer.recognized.connect(textSpeech(speech_recognition_result.text))
