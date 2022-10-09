@@ -136,7 +136,7 @@ def tts(ssml):
     #speech_recognizer.stop_speaking_async()
     #speech_synthesis_result = speech_synthesizer.speak_ssml_async(ssml)
     speech_synthesis_result = speech_synthesizer.start_speaking_ssml_async(ssml)
-
+"""
 def stt(model="base", english=False, verbose=False, energy=300, pause=0.5, dynamic=True):
     
     temp_dir = tempfile.mkdtemp()
@@ -171,7 +171,7 @@ def stt(model="base", english=False, verbose=False, energy=300, pause=0.5, dynam
             print(result)
     
     return predicted_text
-
+"""
 while (True):
 
     try:
