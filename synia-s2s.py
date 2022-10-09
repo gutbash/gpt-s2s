@@ -1,8 +1,10 @@
 #from curses import echo
+from email import message
 from tkinter.ttk import Style
 from unittest import result
 from urllib import response
 from urllib.parse import uses_query
+from matplotlib.animation import Animation
 from matplotlib.pyplot import text
 import nltk
 from nltk.stem import LancasterStemmer
@@ -18,9 +20,10 @@ import azure.cognitiveservices.speech as speechsdk
 import xml.etree.ElementTree as ET
 import xmltodict
 import tempfile
-import whisper
+import animation
+#import whisper
 import speech_recognition as sr
-from pydub import AudioSegment
+#from pydub import AudioSegment
 import io
 from playsound import playsound
 
@@ -40,6 +43,7 @@ speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region="ea
 
 # configs stt lang
 speech_config.speech_recognition_language="en-US"
+#speech_config.speech_recognition_language="ko-KR"
 #speech_config.speech_recognition_language="fil-PH"
 #speech_config.speech_recognition_language="fr-CA"
 #speech_config.speech_recognition_language="es-US"
@@ -49,6 +53,7 @@ speech_config.speech_recognition_language="en-US"
 # other than Aria, style compatible (-empathetic) with Davis, Guy, Jane, Jason, Jenny, Nancy, Tony
 
 speech_config.speech_synthesis_voice_name='en-US-DavisNeural'
+#speech_config.speech_synthesis_voice_name='ko-KR-SunHiNeural'
 #speech_config.speech_synthesis_voice_name='en-US-AIGenerate1Neural'
 #speech_config.speech_synthesis_voice_name = 'zh-CN-XiaomoNeural'
 #speech_config.speech_synthesis_voice_name='es-MX-CarlotaNeural'
@@ -72,12 +77,13 @@ speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audi
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=tts_config)
 
 # sets up identifiers for conversation
-user = "Sam"
+user = "Bash"
 bot = "Davis"
 
 ### SETUP VARIABLES ###
 # concats message history for re-insertion with every prompt
 context = ""
+messages = []
 # last response from GPT
 raspuns = ""
 raspunsF = ""
@@ -96,8 +102,8 @@ messageCount = 0
 def tone_gpt3(zice):
     toneLabel = openai.Completion.create(
         engine="text-davinci-002",
-        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, angry, shouting, shouting, sad, terrified, whispering, whispering, whispering, hopeful, cheerful, excited, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
-        #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, shouting, sad, terrified, whispering, hopeful, cheerful, excited, empathetic, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
+        #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, angry, shouting, shouting, sad, terrified, whispering, whispering, whispering, hopeful, cheerful, excited, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
+        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, shouting, sad, terrified, whispering, hopeful, cheerful, excited, empathetic, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
         temperature=0.0,
         max_tokens=12,
         top_p=1.0,
@@ -106,6 +112,19 @@ def tone_gpt3(zice):
         stop=[user+":", bot+":", "Emotion: [", ","],
     )
     return toneLabel
+
+def concatContext():
+    
+    global messages
+    global context
+    
+    if len(messages) == 11:
+        messages.pop()
+        
+    #print(len(messages))
+        
+    for message in messages:
+        context += message
 
 """ CHAT_GPT3()
 1. inputs and reads user prompt
@@ -116,11 +135,11 @@ def chat_gpt3(zice):
     response = openai.Completion.create(
         engine="text-davinci-002",
         #prompt= bot+" is helping "+user+" speak Spanish. "+context+"\n"+user+": "+zice+"\n"+bot+":",
-        prompt= "This is a conversation between "+bot+" and "+user+". "+bot+" is knowledgable, witty, sarcastic, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
-        temperature=1.0,
+        prompt= "This is a conversation between "+bot+" and "+user+". "+bot+" is knowledgable, witty, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
+        temperature=0.7,
         max_tokens=256,
         top_p=1.0,
-        frequency_penalty=0.0,
+        frequency_penalty=1.0,
         presence_penalty=0.0,
         stop=[user+":", bot+":", "["],
         echo=False,
@@ -134,8 +153,8 @@ def chat_gpt3(zice):
 def tts(ssml):
     global speech_synthesis_result
     #speech_recognizer.stop_speaking_async()
-    #speech_synthesis_result = speech_synthesizer.speak_ssml_async(ssml)
-    speech_synthesis_result = speech_synthesizer.start_speaking_ssml_async(ssml)
+    speech_synthesis_result = speech_synthesizer.speak_ssml_async(ssml).get()
+    #speech_synthesis_result = speech_synthesizer.start_speaking_ssml_async(ssml)
 """
 def stt(model="base", english=False, verbose=False, energy=300, pause=0.5, dynamic=True):
     
@@ -184,6 +203,8 @@ while (True):
         # synthesizes response tts
         def textSpeech(inp):
             
+            inp.encode("utf-8")
+            
             # parses and formats user input
             prompt = user+": "+inp
 
@@ -207,7 +228,7 @@ while (True):
 
                 # gets GPT text message response completion
                 raspuns = (chat_gpt3(inp)).choices[0].text
-
+                
                 # formats raspuns
                 raspunsF = bot+" ["+style+"]: " + raspuns
                 #raspunsF = bot+": "+raspuns
@@ -215,9 +236,11 @@ while (True):
                 # prints raspuns
                 print(raspunsF)
                 #print(raspuns)
+                
+                messages.append("\n"+prompt+"\n"+raspunsF)
 
                 # concats message to memory/history
-                context += "\n"+prompt+"\n"+raspunsF
+                concatContext()
 
                 # SSML for TTS with response and style
                 xmlStringReg = '''<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
@@ -272,8 +295,10 @@ while (True):
                     # prints raspuns
                     print(raspunsF)
 
+                    messages.append("\n"+prompt+"\n"+raspunsF)
+
                     # concats message to memory/history
-                    context += "\n"+prompt+"\n"+raspunsF
+                    concatContext()
 
                     # SSML for TTS with response and style
                     xmlStringReg = '''<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
@@ -310,7 +335,7 @@ while (True):
             
             print("|||||||||| LISTENING ||||||||||")
             #playsound('start.mp3', False)
-
+            
             # gets azure stt
             speech_recognition_result = speech_recognizer.recognize_once_async().get()
 
