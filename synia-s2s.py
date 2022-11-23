@@ -20,7 +20,7 @@ import azure.cognitiveservices.speech as speechsdk
 import xml.etree.ElementTree as ET
 import xmltodict
 import tempfile
-import animation
+#import animation
 #import whisper
 import speech_recognition as sr
 #from pydub import AudioSegment
@@ -52,7 +52,7 @@ speech_config.speech_recognition_language="en-US"
 # configs tts voice
 # other than Aria, style compatible (-empathetic) with Davis, Guy, Jane, Jason, Jenny, Nancy, Tony
 
-speech_config.speech_synthesis_voice_name='en-US-DavisNeural'
+speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
 #speech_config.speech_synthesis_voice_name='ko-KR-SunHiNeural'
 #speech_config.speech_synthesis_voice_name='en-US-AIGenerate1Neural'
 #speech_config.speech_synthesis_voice_name = 'zh-CN-XiaomoNeural'
@@ -77,8 +77,8 @@ speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audi
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=tts_config)
 
 # sets up identifiers for conversation
-user = "Bash"
-bot = "Davis"
+user = "User"
+bot = "AI"
 
 ### SETUP VARIABLES ###
 # concats message history for re-insertion with every prompt
@@ -103,7 +103,7 @@ def tone_gpt3(zice):
     toneLabel = openai.Completion.create(
         engine="text-davinci-002",
         #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, angry, shouting, shouting, sad, terrified, whispering, whispering, whispering, hopeful, cheerful, excited, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
-        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, shouting, sad, terrified, whispering, hopeful, cheerful, excited, empathetic, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
+        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, cheerful, excited, hopeful, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
         temperature=0.0,
         max_tokens=12,
         top_p=1.0,
@@ -118,10 +118,10 @@ def concatContext():
     global messages
     global context
     
-    if len(messages) == 11:
+    if len(messages) == 6:
         messages.pop()
         
-    #print(len(messages))
+    print(len(messages))
         
     for message in messages:
         context += message
@@ -136,10 +136,10 @@ def chat_gpt3(zice):
         engine="text-davinci-002",
         #prompt= bot+" is helping "+user+" speak Spanish. "+context+"\n"+user+": "+zice+"\n"+bot+":",
         prompt= "This is a conversation between "+bot+" and "+user+". "+bot+" is knowledgable, witty, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
-        temperature=0.7,
+        temperature=0.0,
         max_tokens=256,
         top_p=1.0,
-        frequency_penalty=1.0,
+        frequency_penalty=0.0,
         presence_penalty=0.0,
         stop=[user+":", bot+":", "["],
         echo=False,
@@ -219,7 +219,7 @@ while (True):
             if inp != "":
                 
                 # prints status
-                print("NON-SILENCE")
+                #print("NON-SILENCE")
                 print(prompt)
 
                 # gets style GPT would like to respond with
@@ -278,7 +278,7 @@ while (True):
                     prompt = user+": ..."
 
                     # prints status
-                    print("SILENCE PROMPT")
+                    #print("SILENCE PROMPT")
                     print(prompt)
 
                     # gets style GPT would like to respond with
@@ -327,7 +327,7 @@ while (True):
                     done = True
 
                 # increases silence count
-                print("SILENCE")
+                #print("SILENCE")
                 silenceCount += 1
         
         # listens for speech
@@ -335,6 +335,12 @@ while (True):
             
             print("|||||||||| LISTENING ||||||||||")
             #playsound('start.mp3', False)
+
+            # prompts for text input
+            #input = input()
+
+            # processes text input
+            #textSpeech(input)
             
             # gets azure stt
             speech_recognition_result = speech_recognizer.recognize_once_async().get()
