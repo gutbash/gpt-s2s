@@ -52,7 +52,7 @@ speech_config.speech_recognition_language="en-US"
 # configs tts voice
 # other than Aria, style compatible (-empathetic) with Davis, Guy, Jane, Jason, Jenny, Nancy, Tony
 
-speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
+speech_config.speech_synthesis_voice_name='en-US-JennyNeural'
 #speech_config.speech_synthesis_voice_name='ko-KR-SunHiNeural'
 #speech_config.speech_synthesis_voice_name='en-US-AIGenerate1Neural'
 #speech_config.speech_synthesis_voice_name = 'zh-CN-XiaomoNeural'
@@ -77,8 +77,8 @@ speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audi
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=tts_config)
 
 # sets up identifiers for conversation
-user = "User"
-bot = "AI"
+user = "Bash"
+bot = "Jenny"
 
 ### SETUP VARIABLES ###
 # concats message history for re-insertion with every prompt
@@ -101,7 +101,7 @@ messageCount = 0
 """
 def tone_gpt3(zice):
     toneLabel = openai.Completion.create(
-        engine="text-davinci-002",
+        engine="text-davinci-003",
         #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [unfriendly, angry, angry, shouting, shouting, sad, terrified, whispering, whispering, whispering, hopeful, cheerful, excited, friendly].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
         prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, cheerful, excited, hopeful, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [",
         temperature=0.0,
@@ -133,13 +133,13 @@ def concatContext():
 """
 def chat_gpt3(zice):
     response = openai.Completion.create(
-        engine="text-davinci-002",
+        engine="text-davinci-003",
         #prompt= bot+" is helping "+user+" speak Spanish. "+context+"\n"+user+": "+zice+"\n"+bot+":",
-        prompt= "This is a conversation between "+bot+" and "+user+". "+bot+" is knowledgable, witty, and honest."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
-        temperature=0.0,
+        prompt= "This is a chat between "+bot+" and "+user+". You are "+bot+". "+bot+" loves to have interesting and random conversations. "+bot+" is also very funny and witty. "+bot+" speaks informally and casually, constantly using filler words such as 'um', 'uh', 'like', 'very', 'really', 'just', 'you know', 'i mean', 'i guess', 'totally', 'literally', 'seriously', and others when speaking."+context+"\n"+user+": "+zice+"\n"+bot+" ["+style+"]:",
+        temperature=1.0,
         max_tokens=256,
         top_p=1.0,
-        frequency_penalty=0.0,
+        frequency_penalty=1.0,
         presence_penalty=0.0,
         stop=[user+":", bot+":", "["],
         echo=False,
@@ -252,7 +252,7 @@ while (True):
                 xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
                 <voice name="'''+voice+'''">
                 <prosody rate="medium">
-                <mstts:express-as style="'''+style+'''" styledegree="1">
+                <mstts:express-as style="'''+style+'''" styledegree="2">
                 '''+ raspuns +'''
                 </mstts:express-as>
                 </prosody>
@@ -310,7 +310,7 @@ while (True):
                     xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
                     <voice name="'''+voice+'''">
                     <prosody rate="medium">
-                    <mstts:express-as style="'''+style+'''" styledegree="1">
+                    <mstts:express-as style="'''+style+'''" styledegree="2">
                     '''+ raspuns +'''
                     </mstts:express-as>
                     </prosody>
