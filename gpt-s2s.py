@@ -1,30 +1,10 @@
-#from curses import echo
-from email import message
-from tkinter.ttk import Style
-from unittest import result
-from urllib import response
-from urllib.parse import uses_query
-from matplotlib.animation import Animation
-from matplotlib.pyplot import text
-import nltk
-from nltk.stem import LancasterStemmer
-import numpy as np
-import pickle
-import random
-import json
+import keyboard
 import os
+import re
 import time
 import openai
-from dotenv import load_dotenv
 import azure.cognitiveservices.speech as speechsdk
-import xml.etree.ElementTree as ET
-import xmltodict
-import tempfile
-#import animation
-#import whisper
-import speech_recognition as sr
-#from pydub import AudioSegment
-import io
+from dotenv import load_dotenv
 from playsound import playsound
 
 # loads env variables file
@@ -41,24 +21,84 @@ openai.api_key=OAI_API_KEY #OPEN AI INIT
 # configs tts
 speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region="eastus")
 
-# configs stt lang
-speech_config.speech_recognition_language="en-US"
-#speech_config.speech_recognition_language="ko-KR"
-#speech_config.speech_recognition_language="fil-PH"
-#speech_config.speech_recognition_language="fr-CA"
-#speech_config.speech_recognition_language="es-US"
-#speech_config.speech_recognition_language="fa-IR"
+## STT LANGUAGES ##
 
-# configs tts voice
+speech_config.speech_recognition_language="en-US"
+
+#speech_config.speech_recognition_language="es-US"
+#speech_config.speech_recognition_language="es-MX"
+#speech_config.speech_recognition_language="es-PR"
+#speech_config.speech_recognition_language="es-DO"
+#speech_config.speech_recognition_language="es-SV"
+#speech_config.speech_recognition_language="es-CU"
+
+#speech_config.speech_recognition_language="yue-CN"
+#speech_config.speech_recognition_language="zh-CN"
+
+#speech_config.speech_recognition_language="vi-VN"
+
+#speech_config.speech_recognition_language="ru-RU"
+
+#speech_config.speech_recognition_language="ar-EG"
+#speech_config.speech_recognition_language="ar-SY"
+#speech_config.speech_recognition_language="ar-MA"
+
+#speech_config.speech_recognition_language="fr-FR"
+
+#speech_config.speech_recognition_language="km-KH"
+
+#speech_config.speech_recognition_language="it-IT"
+
+#speech_config.speech_recognition_language="fil-PH"
+
+#speech_config.speech_recognition_language="ja-JP"
+
+## TTS LANGUAGES ##
 # other than Aria, style compatible (-empathetic) with Davis, Guy, Jane, Jason, Jenny, Nancy, Tony
 
-speech_config.speech_synthesis_voice_name='en-US-JennyNeural'
-#speech_config.speech_synthesis_voice_name='ko-KR-SunHiNeural'
-#speech_config.speech_synthesis_voice_name='en-US-AIGenerate1Neural'
-#speech_config.speech_synthesis_voice_name = 'zh-CN-XiaomoNeural'
-#speech_config.speech_synthesis_voice_name='es-MX-CarlotaNeural'
-#speech_config.speech_synthesis_voice_name = 'fil-PH-AngeloNeural'
-#speech_config.speech_synthesis_voice_name = 'fil-PH-BlessicaNeural'
+# ENGLISH #
+speech_config.speech_synthesis_voice_name='en-US-NancyNeural'
+#speech_config.speech_synthesis_voice_name='en-US-JennyNeural'
+#speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
+#speech_config.speech_synthesis_voice_name='en-US-JennyMultilingualNeural'
+
+# SPANISH #
+#speech_config.speech_synthesis_voice_name='es-US-PalomaNeural' # united states
+#speech_config.speech_synthesis_voice_name='es-MX-CarlotaNeural' # mexican
+#speech_config.speech_synthesis_voice_name='es-PR-KarinaNeural' # puerto rican
+#speech_config.speech_synthesis_voice_name='es-DO-RamonaNeural' # dominican
+#speech_config.speech_synthesis_voice_name='es-SV-LorenaNeural' # salvadorean
+#speech_config.speech_synthesis_voice_name='es-CU-BelkysNeural' # cuban
+
+# CHINESE #
+#speech_config.speech_synthesis_voice_name='yue-CN-XiaoMinNeural' # cantonese
+#speech_config.speech_synthesis_voice_name='zh-CN-XiaochenNeural' # mandarin
+
+# VIETNAMESE #
+#speech_config.speech_synthesis_voice_name='vi-VN-HoaiMyNeural'
+
+# RUSSIAN #
+#speech_config.speech_synthesis_voice_name='ru-RU-DariyaNeural'
+
+# ARABIC #
+#speech_config.speech_synthesis_voice_name='ar-EG-SalmaNeural' # egyptian
+#speech_config.speech_synthesis_voice_name='ar-SY-AmanyNeural' # syrian
+#speech_config.speech_synthesis_voice_name='ar-MA-MounaNeural' # moroccan
+
+# FRENCH #
+#speech_config.speech_synthesis_voice_name='fr-FR-BrigitteNeural'
+
+# KHMER #
+#speech_config.speech_synthesis_voice_name='km-KH-SreymomNeural'
+
+# ITALIAN #
+#speech_config.speech_synthesis_voice_name='it-IT-ElsaNeural'
+
+# TAGALOG #
+#speech_config.speech_synthesis_voice_name='fil-PH-BlessicaNeural'
+
+# JAPANESE #
+#speech_config.speech_synthesis_voice_name='ja-JP-MayuNeural'
 
 # sets voice
 voice = speech_config.speech_synthesis_voice_name
@@ -77,8 +117,8 @@ speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audi
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=tts_config)
 
 # sets up identifiers for conversation
+bot = "Nancy"
 user = "Bash"
-bot = "Jenny"
 
 ### SETUP VARIABLES ###
 # concats message history for re-insertion with every prompt
