@@ -65,13 +65,13 @@ speech_config.speech_recognition_language="en-US"
 #speech_config.speech_synthesis_voice_name='en-US-JasonNeural'
 #speech_config.speech_synthesis_voice_name='en-US-SaraNeural'
 #speech_config.speech_synthesis_voice_name='en-US-TonyNeural'
-#speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
+speech_config.speech_synthesis_voice_name='en-US-AriaNeural'
 
 # CHINESE #
 #speech_config.speech_synthesis_voice_name='zh-CN-XiaohanNeural'
 #speech_config.speech_synthesis_voice_name='zh-CN-XiaomoNeural'
 #speech_config.speech_synthesis_voice_name='zh-CN-XiaoruiNeural'
-speech_config.speech_synthesis_voice_name='zh-CN-XiaoxiaoNeural'
+#speech_config.speech_synthesis_voice_name='zh-CN-XiaoxiaoNeural'
 #speech_config.speech_synthesis_voice_name='zh-CN-XiaoxuanNeural'
 #speech_config.speech_synthesis_voice_name='zh-CN-XiaoyiNeural'
 #speech_config.speech_synthesis_voice_name='zh-CN-XiaozhenNeural'
@@ -158,9 +158,9 @@ response = ""
 def tone_gpt3(zice, raspuns):
     toneLabel = openai.Completion.create(
         engine="text-davinci-003",
-        #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, cheerful, excited, hopeful, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [", # EN ARIA
+        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, cheerful, excited, hopeful, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [", # EN ARIA
         #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, cheerful, excited, hopeful, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [", # EN
-        prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, calm, fearful, disgruntled, serious, embarassed, depressed, lyrical, poetry-reading, affectionate, cheerful, excited, hopeful, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [", # CN
+        #prompt="Read the following interaction, then pick just one of the emotions for "+bot+" to respond to "+user+" with from this list only: [friendly, empathetic, calm, fearful, disgruntled, serious, embarassed, depressed, lyrical, poetry-reading, affectionate, cheerful, excited, hopeful, unfriendly, angry, shouting, sad, terrified, whispering].\n"+bot+": "+raspuns+"\n"+user+": "+zice+"\n\nEmotion: [", # CN
         temperature=1.0,
         max_tokens=12,
         top_p=1.0,
